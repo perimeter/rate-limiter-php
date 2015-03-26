@@ -1,8 +1,8 @@
 {
-    "name": "perimeter/rate-limit-bundle",
-    "type": "symfony-bundle",
+    "name": "perimeter/rate-limiter-php",
+    "type": "library",
     "description": "Perimeter RateLimiter",
-    "keywords": ["ratelimit", "api", "api-gateway", "perimeter"],
+    "keywords": ["ratelimit", "api", "api-gateway", "perimeter", "redis"],
     "homepage": "http://github.com/perimeter/RateLimiter",
     "license": "MIT",
     "authors": [
@@ -21,14 +21,15 @@
     ],
     "minimum-stability":"dev",
     "require": {
-        "php": ">=5.3.0"
-    },
-    "require-dev": {
-        "doctrine/orm":    "2.4.*",
+        "php": ">=5.3.0",
         "predis/predis":   "1.0.*"
     },
+    "require-dev": {
+        "doctrine/orm":    "2.4.*"
+    },
     "suggest": {
-        "perimeter/cache-bundle":   "Required to use the Cache storage engine"
+        "perimeter/cache-bundle": "Required to use the Cache storage engine",
+        "perimeter/rate-limit-bundle": "allows you to integrate with symfony2"
     },
     "autoload": {
         "psr-4": {

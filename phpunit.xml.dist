@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
   bootstrap="./Tests/bootstrap.php"
-  backupGlobals="false"
-  backupStaticAttributes="false">
-  <php>
-    <server name="CONTAINER_CONFIG" value="Tests/Resources/config/services.xml" />
-  </php>
+  backupGlobals="false">
   <testsuites>
     <testsuite name="RateLimiter Test Suite">
       <directory suffix="Test.php">./Tests</directory>

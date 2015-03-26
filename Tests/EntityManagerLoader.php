@@ -12,6 +12,7 @@
 namespace Perimeter\RateLimiter\Tests;
 
 use Doctrine\ORM\Tools\Setup;
+use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\EntityManager;
 use Doctrine\Common\Annotations\AnnotationReader;
 
@@ -35,5 +36,25 @@ class EntityManagerLoader
         $entityManager = EntityManager::create($conn, $config);
 
         return $entityManager;
+    }
+
+    public static function updateDoctrineDb()
+    {
+        $em = self::getEntityManager();
+
+        $metadatas = $em->getMetadataFactory()->getAllMetadata();
+
+        if (!empty($metadatas)) {
+            // Create SchemaTool
+            $schemaTool = new SchemaTool($em);
+
+            if ($sqls = $schemaTool->getUpdateSchemaSql($metadatas)) {
+                $schemaTool->updateSchema($metadatas);
+            }
+
+            return true;
+        }
+
+        self::$errorMessage = 'No Metadatas';
     }
 }

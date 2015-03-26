@@ -21,19 +21,6 @@ if (!file_exists($autoload_file = __DIR__.'/../vendor/autoload.php')) {
 
 require_once $autoload_file;
 
-if (!empty($_SERVER['UPDATE_DOCTRINE_DB'])) {
-    // build the database
-    if (!$em = EntityManagerLoader::getEntityManager()) {
-        throw new Exception('Cannot update Doctrine DB: ' . EntityManagerLoader::$errorMessage);
-    }
-    $metadatas = $em->getMetadataFactory()->getAllMetadata();
-
-    if ( ! empty($metadatas)) {
-        // Create SchemaTool
-        $schemaTool = new Doctrine\ORM\Tools\SchemaTool($em);
-
-        if ($sqls = $schemaTool->getUpdateSchemaSql($metadatas)) {
-            $schemaTool->updateSchema($metadatas);
-        }
-    }
+if (!EntityManagerLoader::updateDoctrineDB()) {
+    throw new Exception('Cannot update Doctrine DB: ' . EntityManagerLoader::$errorMessage);
 }
