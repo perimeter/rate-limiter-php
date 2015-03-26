@@ -1,9 +1,9 @@
 {
     "name": "perimeter/rate-limiter-php",
     "type": "library",
-    "description": "Perimeter RateLimiter",
+    "description": "A very simple Rate Limiter for PHP",
     "keywords": ["ratelimit", "api", "api-gateway", "perimeter", "redis"],
-    "homepage": "http://github.com/perimeter/RateLimiter",
+    "homepage": "http://github.com/perimeter/rate-limiter-php",
     "license": "MIT",
     "authors": [
         {

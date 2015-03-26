@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Perimeter\RateLimitBundle\Resolver;
+namespace Perimeter\RateLimiter\Resolver;
 
 interface MultipleMeterResolverInterface
 {
