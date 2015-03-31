@@ -93,7 +93,7 @@ class RedisThrottler implements ThrottlerInterface, ThrottlerAdminInterface
         return $this->limitExceeded;
     }
 
-    public function getTopMeters($time = null, $numMeters = null)
+    public function getTopMeters($time = null)
     {
         $buckets = $this->getBuckets($time);
         $totals = array();
@@ -117,11 +117,16 @@ class RedisThrottler implements ThrottlerInterface, ThrottlerAdminInterface
         return array_reverse($totals);
     }
 
-    public function getTokenRate($numMinutes = null)
+    /**
+     * NOTE: If you are calling getTopMeters, it makes more
+     * sense in this case to just sum these up rather than
+     * call getTokenRate and run the function again
+     */
+    public function getTokenRate($time = null)
     {
-        $meters = $this->getTopMeters();
+        $meters = $this->getTopMeters($time);
 
-        return array_sum($this->getTopMeters());
+        return array_sum($meters);
     }
 
     /**

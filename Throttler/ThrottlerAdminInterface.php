@@ -14,5 +14,5 @@ namespace Perimeter\RateLimiter\Throttler;
 interface ThrottlerAdminInterface
 {
     public function getTopMeters($time = null);
-    public function getTokenRate();
+    public function getTokenRate($time = null);
 }
