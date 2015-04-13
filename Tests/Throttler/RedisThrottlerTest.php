@@ -32,7 +32,7 @@ class RedisThrottlerTest extends \PHPUnit_Framework_TestCase
         $client->expects($this->once())
             ->method('mget')
             ->with('meter:test:10000', 'meter:test:9999')
-            ->will($this->returnValue(array(2, null)));
+            ->will($this->returnValue(array(1, 1)));
 
         $config = array(
             'num_buckets'  => 2,
@@ -57,9 +57,6 @@ class RedisThrottlerTest extends \PHPUnit_Framework_TestCase
             ->method('incrby')
             ->with('meter:test:10001', 1);
         $client->expects($this->once())
-            ->method('expireat')
-            ->with('meter:test:10001', 10003);
-        $client->expects($this->once())
             ->method('mget')
             ->with('meter:test:10001', 'meter:test:10000')
             ->will($this->returnValue(array(2, 2)));
@@ -79,9 +76,6 @@ class RedisThrottlerTest extends \PHPUnit_Framework_TestCase
         $client->expects($this->once())
             ->method('incrby')
             ->with('meter:test:10001', 1);
-        $client->expects($this->once())
-            ->method('expireat')
-            ->with('meter:test:10001', 10003);
         $client->expects($this->once())
             ->method('mget')
             ->with('meter:test:10001', 'meter:test:10000')
@@ -103,7 +97,7 @@ class RedisThrottlerTest extends \PHPUnit_Framework_TestCase
         $client->expects($this->once())
             ->method('incrby')
             ->with('meter:test:10000', 1);
-        $client->expects($this->exactly(2))
+        $client->expects($this->exactly(1))
             ->method('expireat')
             ->with($this->logicalOr(
                  $this->equalTo('meter:test:10000'),

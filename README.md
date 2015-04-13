@@ -37,9 +37,9 @@ Now you can throttle your users accordingly!
 
 ```php
 // Create a meter ID based on something unique to your user
-// In this case we use the session ID, but realistically this should be a username,
+// In this case we use the IP. This can also be a username,
 // company, or some other authenticated property
-$meterId = sprintf('session:%s', session_id());
+$meterId = sprintf('ip_address:%s', $_SERVER['REMOTE_ADDR']);
 $warnThreshold = 10;
 $limitThreshold = 20;
 

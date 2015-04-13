@@ -42,30 +42,33 @@ class RedisThrottler implements ThrottlerInterface, ThrottlerAdminInterface
 
         $buckets = $this->getBuckets($time);
 
-        //Build list of redis keys for each bucket
+        // build list of redis keys for each bucket
         foreach ($buckets as $bucketStart) {
             $keys[] = sprintf('meter:%s:%d', $meterId, $bucketStart);
         }
 
         try {
-            //Incr current bucket
+            // incr current bucket
             $this->redis->incrby($keys[0], $numTokens);
 
-            //Expire current bucket at the appropriate time (plus a hashed offset to stagger expirations)
-            $expireAt = $buckets[0] + ($this->config['bucket_size'] * $this->config['num_buckets']);
-            $this->redis->expireat($keys[0], $expireAt);
-
-            //Multi-get all buckets
+            // multi-get all buckets
             $rates = call_user_func_array(array($this->redis, 'mget'), $keys);
 
-            //Extrapolate rate and account for total number of servers
+            // check if this bucket is new, and if so set expires time
+            if ($rates[0] === $numTokens) {
+                // expire current bucket at the appropriate time (plus a hashed offset to stagger expirations)
+                $expireAt = $buckets[0] + ($this->config['bucket_size'] * $this->config['num_buckets']);
+                $this->redis->expireat($keys[0], $expireAt);
+            }
+
+            // extrapolate rate and account for total number of servers
             $actual = (array_sum($rates) / $this->config['num_buckets']) * ($this->config['rate_period'] / $this->config['bucket_size']) * $this->config['server_count'];
 
             if ($this->config['track_meters']) {
                 $this->trackMeter($meterId, $buckets, $rates);
             }
 
-            //Check rate against configured limits
+            // check rate against configured limits
             if ($actual > $limitThreshold) {
                 $this->limitExceeded = true;
             } elseif ($actual > $warnThreshold) {
@@ -77,7 +80,7 @@ class RedisThrottler implements ThrottlerInterface, ThrottlerAdminInterface
             }
         }
 
-        //Induce a delay on calls to this meter
+        // induce a delay on calls to this meter
         if ($throttleMilliseconds > 0) {
             usleep($throttleMilliseconds * 1000);
         }
@@ -155,8 +158,8 @@ class RedisThrottler implements ThrottlerInterface, ThrottlerAdminInterface
             $time = time();
         }
 
-        //Create $config['num_buckets'] of $config['bucket_size'] seconds
-        $buckets[0] = $time - ($time % $this->config['bucket_size']); //Align to $config['bucket_size'] second boundaries
+        // create $config['num_buckets'] of $config['bucket_size'] seconds
+        $buckets[0] = $time - ($time % $this->config['bucket_size']); // align to $config['bucket_size'] second boundaries
 
         for ($i=1; $i < $this->config['num_buckets']; $i++) {
             $buckets[$i] = $buckets[$i-1] - $this->config['bucket_size'];
