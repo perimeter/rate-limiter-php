@@ -54,10 +54,11 @@ class RedisThrottler implements ThrottlerInterface, ThrottlerAdminInterface
             // multi-get all buckets
             $rates = call_user_func_array(array($this->redis, 'mget'), $keys);
 
+            // expire current bucket at the appropriate time (plus a hashed offset to stagger expirations)
+            $expireAt = $buckets[0] + ($this->config['bucket_size'] * $this->config['num_buckets']);
+
             // check if this bucket is new, and if so set expires time
             if ($rates[0] === $numTokens) {
-                // expire current bucket at the appropriate time (plus a hashed offset to stagger expirations)
-                $expireAt = $buckets[0] + ($this->config['bucket_size'] * $this->config['num_buckets']);
                 $this->redis->expireat($keys[0], $expireAt);
             }
 
@@ -70,16 +71,20 @@ class RedisThrottler implements ThrottlerInterface, ThrottlerAdminInterface
 
             // check rate against configured limits
             if ($actual > $limitThreshold) {
-                //Record that we rate limited
-                $key = str_replace('meter', 'error', $keys[0]);
-                $this->redis->incrby($key, $numTokens);
-                $this->redis->expireat($key, $expireAt);
+                if ($this->config['track_meters']) {
+                    //Record that we rate limited
+                    $key = str_replace('meter', 'error', $keys[0]);
+                    $this->redis->incrby($key, $numTokens);
+                    $this->redis->expireat($key, $expireAt);
+                }
                 $this->limitExceeded = true;
             } elseif ($actual > $warnThreshold) {
-                //Record that we warned
-                $key = str_replace('meter', 'warn', $keys[0]);
-                $this->redis->incrby($key, $numTokens);
-                $this->redis->expireat($key, $expireAt);
+                if ($this->config['track_meters']) {                
+                    //Record that we warned
+                    $key = str_replace('meter', 'warn', $keys[0]);
+                    $this->redis->incrby($key, $numTokens);
+                    $this->redis->expireat($key, $expireAt);
+                }
                 $this->limitWarning = true;
             }
         } catch (\Exception $e) {
