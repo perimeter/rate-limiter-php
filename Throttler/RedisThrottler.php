@@ -70,8 +70,16 @@ class RedisThrottler implements ThrottlerInterface, ThrottlerAdminInterface
 
             // check rate against configured limits
             if ($actual > $limitThreshold) {
+                //Record that we rate limited
+                $key = str_replace('meter', 'error', $keys[0]);
+                $this->redis->incrby($key, $numTokens);
+                $this->redis->expireat($key, $expireAt);
                 $this->limitExceeded = true;
             } elseif ($actual > $warnThreshold) {
+                //Record that we warned
+                $key = str_replace('meter', 'warn', $keys[0]);
+                $this->redis->incrby($key, $numTokens);
+                $this->redis->expireat($key, $expireAt);
                 $this->limitWarning = true;
             }
         } catch (\Exception $e) {
