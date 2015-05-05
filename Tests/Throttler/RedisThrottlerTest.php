@@ -130,6 +130,59 @@ class RedisThrottlerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($meters));
         $this->assertArrayHasKey('test', $meters);
         $this->assertEquals(2, $meters['test']);
+
+        ////////////
+
+        $client = $this->getMockBuilder('Predis\Client')
+            ->setMethods(array('incrby', 'expireat', 'mget', 'hset'))
+            ->disableOriginalConstructor()
+            ->getMock();
+        $client->expects($this->exactly(2))
+            ->method('incrby')
+            ->with($this->logicalOr(
+                $this->equalTo('meter:test:10001'),
+                $this->equalTo('warn:test:10001')
+            ), 1);
+        $client->expects($this->exactly(2))
+            ->method('expireat')
+            ->with($this->logicalOr(
+                 $this->equalTo('track:10001'),
+                 $this->equalTo('warn:test:10001')
+             ), 10003);            
+        $client->expects($this->once())
+            ->method('mget')
+            ->with('meter:test:10001', 'meter:test:10000')
+            ->will($this->returnValue(array(2, 2)));
+
+        $throttler = new RedisThrottler($client, $config, true);
+        $throttler->consume('test', 1, 2, 1, 2, 10001);
+
+        ////////////
+
+        $client = $this->getMockBuilder('Predis\Client')
+            ->setMethods(array('incrby', 'expireat', 'mget', 'hset'))
+            ->disableOriginalConstructor()
+            ->getMock();
+        $client->expects($this->exactly(2))
+            ->method('incrby')
+            ->with($this->logicalOr(
+                $this->equalTo('meter:test:10001'),
+                $this->equalTo('error:test:10001')
+            ), 1);
+        $client->expects($this->exactly(2))
+            ->method('expireat')
+            ->with($this->logicalOr(
+                 $this->equalTo('track:10001'),
+                 $this->equalTo('error:test:10001')
+             ), 10003);            
+        $client->expects($this->once())
+            ->method('mget')
+            ->with('meter:test:10001', 'meter:test:10000')
+            ->will($this->returnValue(array(4, 2)));
+
+        $throttler = new RedisThrottler($client, $config, true);
+        $throttler->consume('test', 1, 2, 1, 2, 10001);
+
     }
 
     public function testIntegration()
