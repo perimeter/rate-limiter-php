@@ -1,7 +1,7 @@
 Perimeter RateLimiter
 =====================
 
-[![Build Status](https://travis-ci.org/perimeter/rate-limiter-php.svg?branch=develop)](https://travis-ci.org/perimeter/RateLimiter)
+[![Build Status](https://travis-ci.org/perimeter/rate-limiter-php.svg?branch=develop)](https://travis-ci.org/perimeter/rate-limiter-php)
 
 Rate Limit those APIs!
 
