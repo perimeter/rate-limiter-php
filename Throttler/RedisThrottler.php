@@ -58,7 +58,7 @@ class RedisThrottler implements ThrottlerInterface, ThrottlerAdminInterface
             $expireAt = $buckets[0] + ($this->config['bucket_size'] * $this->config['num_buckets']);
 
             // check if this bucket is new, and if so set expires time
-            if ($rates[0] === $numTokens) {
+            if ((int) $rates[0] === $numTokens) {
                 $this->redis->expireat($keys[0], $expireAt);
             }
 
